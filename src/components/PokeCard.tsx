@@ -1,26 +1,117 @@
 import { useEffect, useState, Suspense, FC } from "react";
+import styled from "@emotion/styled";
 
 import Loading from "./Loading";
 
 interface PokemonType {
-  slot: number;
-  type: {
-    name: string;
-  };
+  name: string;
 }
 
-interface Pokemon {
+interface PokeAPIType {
+  type: PokemonType;
+}
+
+interface PokemonBasic {
+  name: string;
+}
+
+interface PokemonLoad extends PokemonBasic {
+  url: string;
+}
+
+interface Pokemon extends PokemonBasic {
   front_default: string;
   front_shiny: string;
   types: PokemonType[];
 }
 
-interface Pokemons {
-  name: string;
-  url: string;
-}
+const Card = styled.div`
+  display: flex;
+  height: 150px;
+  width: 100px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  border: 1px solid black;
+  margin: 0.2rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
 
-const PokeCard: FC<Pokemons> = ({ name, url }) => {
+  &.dragon,
+  &.grass,
+  &.poison,
+  &.ground,
+  &.fighting,
+  &.psychic,
+  &.dark {
+    color: white;
+  }
+  &.grass {
+    background-color: green;
+  }
+  &.bug {
+    background-color: greenyellow;
+  }
+  &.water {
+    background-color: aqua;
+  }
+  &.fire {
+    background-color: salmon;
+  }
+  &.normal {
+    background-color: lightgray;
+  }
+  &.poison {
+    background-color: blueviolet;
+  }
+  &.electric {
+    background-color: yellow;
+  }
+  &.ground {
+    background-color: burlywood;
+  }
+  &.fairy {
+    background-color: pink;
+  }
+  &.fighting {
+    background-color: brown;
+  }
+  &.psychic {
+    background-color: purple;
+  }
+  &.rock {
+    background-color: saddlebrown;
+  }
+  &.ghost {
+    background-color: plum;
+  }
+  &.ice {
+    background-color: lightblue;
+  }
+  &.dragon {
+    background-color: red;
+  }
+  &.dark {
+    background-color: black;
+  }
+  &.steel {
+    background-color: whitesmoke;
+  }
+`;
+
+const PokeCard: FC<Pokemon> = ({ name, types, front_default, front_shiny }) => (
+  <Card className={types[0].name}>
+    {name}
+    <img
+      src={front_default}
+      onMouseOver={(e) => (e.currentTarget.src = front_shiny)}
+      onMouseOut={(e) => (e.currentTarget.src = front_default)}
+    />
+    {types.map(({ name: typeName }) => typeName).join(", ")}
+  </Card>
+);
+
+const PokeLoad: FC<PokemonLoad> = ({ name, url }) => {
   const [pokemon, setPokemon] = useState<Pokemon | null>(null);
   useEffect(() => {
     (async () => {
@@ -28,24 +119,19 @@ const PokeCard: FC<Pokemons> = ({ name, url }) => {
         sprites: { front_default, front_shiny },
         types,
       } = await (await fetch(url)).json();
-      setPokemon({ front_default, front_shiny, types });
+      setPokemon({
+        name,
+        front_default,
+        front_shiny,
+        types: types.map(({ type }: PokeAPIType) => type),
+      });
     })();
   }, []);
   return (
     <Suspense fallback={<Loading />}>
-      {pokemon && (
-        <div className={`PokeCard ${pokemon.types[0].type.name}`}>
-          {name}
-          <img
-            src={pokemon.front_default}
-            onMouseOver={(e) => (e.currentTarget.src = pokemon.front_shiny)}
-            onMouseOut={(e) => (e.currentTarget.src = pokemon.front_default)}
-          />
-          {pokemon.types.map(({ type: { name } }) => name).join(", ")}
-        </div>
-      )}
+      {pokemon && <PokeCard {...pokemon} />}
     </Suspense>
   );
 };
 
-export default PokeCard;
+export default PokeLoad;
