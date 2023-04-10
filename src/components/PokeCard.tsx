@@ -1,4 +1,5 @@
 import { useEffect, useState, Suspense, FC } from "react";
+import styled from '@emotion/styled'
 
 import Loading from "./Loading";
 
