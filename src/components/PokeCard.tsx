@@ -1,14 +1,14 @@
-import { useEffect, useState, Suspense, FC } from "react";
+import { Suspense, FC } from "react";
 import styled from "@emotion/styled";
+
+import usePokemon from "../hooks/usePokemon";
 
 import Loading from "./Loading";
 
-interface PokemonType {
-  name: string;
-}
-
 interface PokeAPIType {
-  type: PokemonType;
+  type: {
+    name: string;
+  };
 }
 
 interface PokemonBasic {
@@ -19,10 +19,12 @@ interface PokemonLoad extends PokemonBasic {
   url: string;
 }
 
-interface Pokemon extends PokemonBasic {
-  front_default: string;
-  front_shiny: string;
-  types: PokemonType[];
+interface PokemonCall extends PokemonBasic {
+  sprites: {
+    front_default: string;
+    front_shiny: string;
+  };
+  types: PokeAPIType[];
 }
 
 const Card = styled.div`
@@ -99,39 +101,28 @@ const Card = styled.div`
   }
 `;
 
-const PokeCard: FC<Pokemon> = ({ name, types, front_default, front_shiny }) => (
-  <Card className={types[0].name}>
-    {name}
-    <img
-      src={front_default}
-      onMouseOver={(e) => (e.currentTarget.src = front_shiny)}
-      onMouseOut={(e) => (e.currentTarget.src = front_default)}
-    />
-    {types.map(({ name: typeName }) => typeName).join(", ")}
-  </Card>
-);
-
-const PokeLoad: FC<PokemonLoad> = ({ name, url }) => {
-  const [pokemon, setPokemon] = useState<Pokemon | null>(null);
-  useEffect(() => {
-    (async () => {
-      const {
-        sprites: { front_default, front_shiny },
-        types,
-      } = await (await fetch(url)).json();
-      setPokemon({
-        name,
-        front_default,
-        front_shiny,
-        types: types.map(({ type }: PokeAPIType) => type),
-      });
-    })();
-  }, []);
+const PokeCard: FC<PokemonLoad> = ({ name, url }) => {
+  const [pokemon] = usePokemon<PokemonCall>({ url });
+  if (!pokemon) {
+    return null;
+  }
+  const {
+    sprites: { front_default, front_shiny },
+    types,
+  } = pokemon as PokemonCall;
   return (
     <Suspense fallback={<Loading />}>
-      {pokemon && <PokeCard {...pokemon} />}
+      <Card className={types[0].type.name}>
+        {name}
+        <img
+          src={front_default}
+          onMouseOver={(e) => (e.currentTarget.src = front_shiny)}
+          onMouseOut={(e) => (e.currentTarget.src = front_default)}
+        />
+        {types.map(({ type: { name: typeName } }) => typeName).join(", ")}
+      </Card>
     </Suspense>
   );
 };
 
-export default PokeLoad;
+export default PokeCard;
