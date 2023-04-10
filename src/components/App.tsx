@@ -1,8 +1,17 @@
-import { useEffect, useState, Suspense, FC } from "react";
+import { Suspense, FC } from "react";
 import styled from "@emotion/styled";
+
+import usePokemon from "../hooks/usePokemon";
 
 import Loading from "./Loading";
 import PokeCard from "./PokeCard";
+
+interface PokemonAPIList {
+  results: {
+    name: string;
+    url: string;
+  }[];
+}
 
 const Container = styled.div`
   display: flex;
@@ -10,21 +19,15 @@ const Container = styled.div`
 `;
 
 const App: FC = () => {
-  const [pokemons, setPokemons] = useState([]);
-  useEffect(() => {
-    if (pokemons.length === 0) {
-      (async () => {
-        const { results } = await (
-          await fetch("https://pokeapi.co/api/v2/pokemon/?limit=250&offset=0")
-        ).json();
-        setPokemons(results);
-      })();
-    }
-  }, []);
+  const [pokemons] = usePokemon<PokemonAPIList>();
+  if (!pokemons) {
+    return null;
+  }
+  const { results } = pokemons;
   return (
     <Container>
       <Suspense fallback={<Loading />}>
-        {pokemons.map(({ name, url }) => (
+        {results.map(({ name, url }) => (
           <PokeCard key={name} name={name} url={url} />
         ))}
       </Suspense>
