@@ -2,6 +2,7 @@ import { Suspense, FC } from "react";
 import styled from "@emotion/styled";
 
 import usePokemon from "../hooks/usePokemon";
+import { PokemonBasic, PokemonList } from "../shared/interfaces";
 
 import Loading from "./Loading";
 
@@ -9,14 +10,6 @@ interface PokeAPIType {
   type: {
     name: string;
   };
-}
-
-interface PokemonBasic {
-  name: string;
-}
-
-interface PokemonLoad extends PokemonBasic {
-  url: string;
 }
 
 interface PokemonCall extends PokemonBasic {
@@ -101,7 +94,7 @@ const Card = styled.div`
   }
 `;
 
-const PokeCard: FC<PokemonLoad> = ({ name, url }) => {
+const PokeCard: FC<PokemonList> = ({ name, url }) => {
   const [pokemon] = usePokemon<PokemonCall>({ url });
   if (!pokemon) {
     return null;
@@ -109,7 +102,7 @@ const PokeCard: FC<PokemonLoad> = ({ name, url }) => {
   const {
     sprites: { front_default, front_shiny },
     types,
-  } = pokemon as PokemonCall;
+  } = pokemon;
   return (
     <Suspense fallback={<Loading />}>
       <Card className={types[0].type.name}>
