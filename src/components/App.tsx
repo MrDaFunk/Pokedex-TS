@@ -1,36 +1,7 @@
-import { Suspense, FC } from "react";
-import styled from "@emotion/styled";
+import { FC } from "react";
 
-import usePokemon from "../hooks/usePokemon";
-import { PokemonList } from "../shared/interfaces";
+import PokeList from "./PokeList";
 
-import Loading from "./Loading";
-import PokeCard from "./PokeCard";
-
-interface PokemonAPIList {
-  results: PokemonList[];
-}
-
-const Container = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-`;
-
-const App: FC = () => {
-  const [pokemons] = usePokemon<PokemonAPIList>();
-  if (!pokemons) {
-    return null;
-  }
-  const { results } = pokemons;
-  return (
-    <Container>
-      <Suspense fallback={<Loading />}>
-        {results.map(({ name, url }) => (
-          <PokeCard key={name} name={name} url={url} />
-        ))}
-      </Suspense>
-    </Container>
-  );
-};
+const App: FC = () => <PokeList />;
 
 export default App;
